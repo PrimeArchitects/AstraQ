@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-line;
+  }
+  body {
+    @apply bg-ink font-body text-foreground;
+  }
+  ::selection {
+    @apply bg-signal/30 text-foreground;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-signal ring-offset-2 ring-offset-ink;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
