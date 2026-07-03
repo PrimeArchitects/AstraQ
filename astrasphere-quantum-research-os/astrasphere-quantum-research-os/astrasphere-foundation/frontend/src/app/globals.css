@@ -3,7 +3,29 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: light;
+  --color-ink: 250 251 253;
+  --color-ink-panel: 255 255 255;
+  --color-ink-raised: 242 244 247;
+  --color-line: 221 226 232;
+  --color-line-faint: 233 237 241;
+  --color-line-strong: 196 203 213;
+  --color-foreground: 16 20 26;
+  --color-foreground-muted: 91 101 117;
+  --color-foreground-faint: 142 150 163;
+}
+
+.dark {
   color-scheme: dark;
+  --color-ink: 10 13 18;
+  --color-ink-panel: 16 20 28;
+  --color-ink-raised: 22 27 37;
+  --color-line: 35 42 54;
+  --color-line-faint: 24 30 40;
+  --color-line-strong: 50 60 76;
+  --color-foreground: 231 235 242;
+  --color-foreground-muted: 140 150 168;
+  --color-foreground-faint: 90 100 120;
 }
 
 @layer base {
