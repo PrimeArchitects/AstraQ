@@ -1,3 +1,5 @@
+"use client";
+
 import { AIInsightsCard } from "@/components/dashboard/ai-insights-card";
 import { ActivityTimeline } from "@/components/dashboard/activity-timeline";
 import { QuickActions } from "@/components/dashboard/quick-actions";
@@ -10,9 +12,12 @@ import { TrendingTopicsCard } from "@/components/dashboard/trending-topics-card"
 import { UpcomingTasksCard } from "@/components/dashboard/upcoming-tasks-card";
 import { AppShell } from "@/components/layout/app-shell";
 import { CoherenceRing } from "@/components/layout/coherence-ring";
-import { CURRENT_USER } from "@/data/mock";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export default function DashboardPage() {
+  const { user } = useCurrentUser();
+  const firstName = user?.name?.split(" ")[0] ?? "Researcher";
+
   return (
     <AppShell>
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
@@ -22,9 +27,12 @@ export default function DashboardPage() {
               Welcome back
             </p>
             <h1 className="mt-2 font-display text-display-md text-foreground">
-              {CURRENT_USER.name.split(" ")[0]}&rsquo;s Research Console
+              {firstName}&rsquo;s Research Console
             </h1>
-            <p className="mt-2 max-w-md text-body-sm text-foreground-muted">{CURRENT_USER.role}</p>
+            <p className="mt-2 max-w-md text-body-sm text-foreground-muted">
+              {user?.emailVerified ? "" : "Verify your email to unlock all features. "}
+              Here&rsquo;s what&rsquo;s happening in your research library.
+            </p>
           </div>
           <CoherenceRing className="h-24 w-24 shrink-0 md:h-28 md:w-28" />
         </section>
