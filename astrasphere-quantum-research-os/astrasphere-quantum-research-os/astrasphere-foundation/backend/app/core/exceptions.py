@@ -28,3 +28,7 @@ class UnauthorizedError(AstraSphereError):
 
 class ForbiddenError(AstraSphereError):
     """Raised when a caller is identified but lacks permission."""
+
+
+class RateLimitError(AstraSphereError):
+    """Raised when a caller exceeds an enforced rate limit."""

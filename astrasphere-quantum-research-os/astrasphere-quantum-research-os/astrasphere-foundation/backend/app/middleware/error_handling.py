@@ -15,6 +15,7 @@ from app.core.exceptions import (
     ConflictError,
     ForbiddenError,
     NotFoundError,
+    RateLimitError,
     UnauthorizedError,
     ValidationError,
 )
@@ -27,6 +28,7 @@ _STATUS_MAP: dict[type[AstraSphereError], int] = {
     ValidationError: status.HTTP_422_UNPROCESSABLE_ENTITY,
     UnauthorizedError: status.HTTP_401_UNAUTHORIZED,
     ForbiddenError: status.HTTP_403_FORBIDDEN,
+    RateLimitError: status.HTTP_429_TOO_MANY_REQUESTS,
 }
 
 

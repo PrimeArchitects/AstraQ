@@ -19,5 +19,17 @@ async def get_redis() -> Redis:
 async def close_redis() -> None:
     global _redis_client
     if _redis_client is not None:
-        await _redis_client.close()
+        await _redis_client.aclose()
         _redis_client = None
+
+
+def force_reset_redis_client_for_tests() -> None:
+    """Test-only: drops the cached client *without* attempting a graceful
+    close. anyio/pytest gives each test its own event loop, and a
+    connection's close() tries to communicate on that original loop —
+    which is already closed by the time the next test runs. Discarding
+    the reference (letting the OS clean up the dead socket) avoids that
+    crash; the next `get_redis()` call creates a fresh client bound to
+    the current loop."""
+    global _redis_client
+    _redis_client = None

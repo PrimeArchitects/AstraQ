@@ -31,9 +31,33 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     LOG_JSON: bool = False
 
-    # --- Security (placeholders — real auth arrives in a later phase) ---
+    # --- Security / JWT ---
     SECRET_KEY: str = Field(default="CHANGE_ME_INSECURE_DEV_ONLY")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
+    EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS: int = 24
+    PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: int = 30
+
+    # --- Cookies ---
+    COOKIE_DOMAIN: str | None = None
+    COOKIE_SECURE: bool = False  # must be True in staging/production (HTTPS only)
+    ACCESS_TOKEN_COOKIE_NAME: str = "astrasphere_access"
+    REFRESH_TOKEN_COOKIE_NAME: str = "astrasphere_refresh"
+    CSRF_COOKIE_NAME: str = "astrasphere_csrf"
+
+    # --- Rate limiting (auth endpoints) ---
+    RATE_LIMIT_LOGIN_PER_MINUTE: int = 5
+    RATE_LIMIT_REGISTER_PER_MINUTE: int = 3
+    RATE_LIMIT_PASSWORD_RESET_PER_MINUTE: int = 3
+
+    # --- Frontend (used to build links in transactional emails) ---
+    FRONTEND_URL: str = "http://localhost:3000"
+
+    # --- Google OAuth (leave unset until real credentials are provisioned) ---
+    GOOGLE_CLIENT_ID: str | None = None
+    GOOGLE_CLIENT_SECRET: str | None = None
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/oauth/google/callback"
 
     # --- CORS ---
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
