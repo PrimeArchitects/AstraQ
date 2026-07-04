@@ -1,6 +1,7 @@
 "use client";
 
 import { LogOut, Settings, User } from "lucide-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -12,9 +13,37 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CURRENT_USER } from "@/data/mock";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { apiClient } from "@/lib/api-client";
+
+function initials(name: string): string {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+async function handleSignOut() {
+  // Revoke the backend session first (its cookies are what actually
+  // authenticate API calls); Auth.js's signOut() then clears the
+  // frontend session cookie and redirects.
+  try {
+    await apiClient.post("/auth/logout");
+  } catch {
+    // Backend session may already be expired — still proceed to clear
+    // the frontend session either way.
+  }
+  await signOut({ callbackUrl: "/login" });
+}
 
 export function UserMenu() {
+  const { user } = useCurrentUser();
+  if (!user) return null;
+
+  const displayName = user.name ?? user.email ?? "Account";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -23,18 +52,18 @@ export function UserMenu() {
           aria-label="Open account menu"
         >
           <Avatar>
-            <AvatarFallback>{CURRENT_USER.initials}</AvatarFallback>
+            <AvatarFallback>{initials(displayName)}</AvatarFallback>
           </Avatar>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel className="normal-case tracking-normal">
-          <p className="text-body-sm font-medium text-foreground">{CURRENT_USER.name}</p>
-          <p className="text-body-sm text-foreground-faint">{CURRENT_USER.email}</p>
+          <p className="text-body-sm font-medium text-foreground">{displayName}</p>
+          <p className="text-body-sm text-foreground-faint">{user.email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/settings">
+          <Link href="/profile">
             <User className="h-4 w-4" aria-hidden /> Profile
           </Link>
         </DropdownMenuItem>
@@ -44,7 +73,10 @@ export function UserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-danger data-[highlighted]:text-danger">
+        <DropdownMenuItem
+          className="text-danger data-[highlighted]:text-danger"
+          onSelect={handleSignOut}
+        >
           <LogOut className="h-4 w-4" aria-hidden /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
