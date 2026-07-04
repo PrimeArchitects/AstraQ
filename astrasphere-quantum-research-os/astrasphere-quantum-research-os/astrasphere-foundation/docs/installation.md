@@ -53,8 +53,8 @@ Verify:
 
 ## 3. Apply database migrations
 
-No migrations exist yet in the foundation phase (no models defined),
-but the command that will apply them once they do:
+Applies the `users`/`sessions`/`user_preferences`/`auth_providers`
+migration (see docs/authentication.md for the schema):
 
 ```bash
 make migrate
@@ -78,8 +78,13 @@ uvicorn app.main:app --reload
 cd frontend
 npm install
 cp .env.example .env.local
+npx auth secret       # writes a real AUTH_SECRET into .env.local
 npm run dev
 ```
+
+Google sign-in stays inactive until `GOOGLE_CLIENT_ID`/
+`GOOGLE_CLIENT_SECRET` are set in both `frontend/.env.local` and
+`backend/.env` — see docs/authentication.md "OAuth configuration".
 
 You'll still need Postgres, Redis, and Qdrant reachable somewhere —
 either run just those three via `docker compose up postgres redis

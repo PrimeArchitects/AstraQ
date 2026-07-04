@@ -2,19 +2,20 @@
 
 ## Foundation scope
 
-This repository is currently a **foundation**: repository structure,
-tooling, and infrastructure wiring, with no business features. Explicitly
-out of scope for this phase, by design:
+This repository started as a foundation-only phase and has since grown
+real features. As of this phase:
 
-- **Authentication** — `app/api/deps.py::get_current_user` exists and
-  always raises `UnauthorizedError`. Real routers can depend on it now;
-  the implementation swaps in later without changing router signatures.
-- **AI features** — `app/ai/provider.py::AIProvider` defines the
-  contract (`complete`, `embed`); `NullAIProvider` is the only
-  implementation and raises `NotImplementedError`. An Anthropic-backed
-  implementation is a drop-in later, not a refactor.
-- **PDF processing / business logic** — no domain models, no feature
-  routers beyond `/health` exist yet.
+- **Authentication** — fully implemented. See
+  [docs/authentication.md](authentication.md) for the complete
+  architecture (self-hosted JWT/session auth in FastAPI, Auth.js as the
+  frontend session layer, Google OAuth wired but inert until real
+  credentials are provided).
+- **AI features** — still a placeholder. `app/ai/provider.py::AIProvider`
+  defines the contract (`complete`, `embed`); `NullAIProvider` is the
+  only implementation and raises `NotImplementedError`. An
+  Anthropic-backed implementation is a drop-in later, not a refactor.
+- **PDF processing / research business logic** — no domain models or
+  feature routers beyond auth/users/health exist yet.
 
 ## Why this stack
 
@@ -88,7 +89,7 @@ UI should extend these tokens rather than introducing ad hoc colors.
 
 | Where | What plugs in later |
 | --- | --- |
-| `app/api/deps.py::get_current_user` | Real JWT/session auth |
+| `app/api/deps.py::get_current_user` | Implemented — real JWT/cookie auth (see docs/authentication.md) |
 | `app/ai/provider.py::AIProvider` | Anthropic-backed implementation |
 | `app/db/qdrant_client.py` | Embedding + semantic search once AI lands |
 | `app/db/base_registry.py` | Import point for every new ORM model |
