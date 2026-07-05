@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ARRAY, Boolean, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.db.base import ModelBase
 
 if TYPE_CHECKING:
     from app.models.auth_provider import AuthProvider
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from app.models.user_preferences import UserPreferences
 
 
-class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+class User(ModelBase):
     __tablename__ = "users"
 
     # Stored lowercased (enforced in the service layer) so lookups and

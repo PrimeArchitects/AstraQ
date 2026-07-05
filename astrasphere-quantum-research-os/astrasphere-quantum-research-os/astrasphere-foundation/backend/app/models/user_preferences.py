@@ -11,13 +11,13 @@ from uuid import UUID
 from sqlalchemy import Boolean, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.db.base import ModelBase
 
 if TYPE_CHECKING:
     from app.models.user import User
 
 
-class UserPreferences(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+class UserPreferences(ModelBase):
     __tablename__ = "user_preferences"
 
     user_id: Mapped[UUID] = mapped_column(

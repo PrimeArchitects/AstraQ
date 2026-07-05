@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+import app.db.base_registry  # noqa: F401  (registers every ORM model before first query)
 from app.core.config import get_settings
 
 settings = get_settings()

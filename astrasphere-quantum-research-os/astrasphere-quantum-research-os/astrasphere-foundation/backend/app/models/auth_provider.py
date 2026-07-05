@@ -13,13 +13,13 @@ from uuid import UUID
 from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.db.base import ModelBase
 
 if TYPE_CHECKING:
     from app.models.user import User
 
 
-class AuthProvider(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+class AuthProvider(ModelBase):
     __tablename__ = "auth_providers"
     __table_args__ = (
         UniqueConstraint("provider", "provider_account_id", name="uq_provider_account"),
