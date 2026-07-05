@@ -4,7 +4,9 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.api.v1.router import api_router
 from app.core.config import get_settings
@@ -13,7 +15,10 @@ from app.core.logging import configure_logging, get_logger
 from app.db.redis_client import close_redis
 from app.middleware.error_handling import (
     astrasphere_exception_handler,
+    database_error_handler,
+    integrity_error_handler,
     unhandled_exception_handler,
+    validation_exception_handler,
 )
 from app.middleware.request_context import RequestContextMiddleware
 
@@ -50,6 +55,9 @@ def create_app() -> FastAPI:
     app.add_middleware(RequestContextMiddleware)
 
     app.add_exception_handler(AstraSphereError, astrasphere_exception_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(IntegrityError, integrity_error_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(SQLAlchemyError, database_error_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, unhandled_exception_handler)
 
     app.include_router(api_router, prefix=settings.API_V1_PREFIX)

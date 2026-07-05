@@ -11,6 +11,8 @@ attack each guards against.
 import uuid
 from datetime import UTC, datetime, timedelta
 
+import structlog
+
 from app.core.config import get_settings
 from app.core.email import EmailSender
 from app.core.exceptions import ConflictError, NotFoundError, UnauthorizedError, ValidationError
@@ -32,6 +34,7 @@ from app.repositories.user_repository import UserRepository
 from app.services.base import BaseService
 
 settings = get_settings()
+logger = structlog.get_logger("auth")
 
 # A validly-formatted bcrypt hash, generated once at import time, used
 # only so verify_password() has something correctly-shaped to compare
@@ -86,6 +89,7 @@ class AuthService(BaseService):
             subject="Verify your AstraSphere account",
             body=f"Welcome to AstraSphere. Verify your email: {verify_url}",
         )
+        logger.info("user_registered", user_id=str(user.id), email=user.email)
         return user
 
     async def authenticate(self, *, email: str, password: str) -> User:
@@ -98,14 +102,18 @@ class AuthService(BaseService):
             # response time doesn't itself leak whether the email exists
             # (a timing side-channel).
             verify_password(password, _DUMMY_HASH)
+            logger.warning("login_failed", email=email.lower().strip(), reason="no_such_account")
             raise UnauthorizedError("Incorrect email or password.")
 
         if not verify_password(password, user.hashed_password):
+            logger.warning("login_failed", user_id=str(user.id), reason="wrong_password")
             raise UnauthorizedError("Incorrect email or password.")
 
         if not user.is_active:
+            logger.warning("login_failed", user_id=str(user.id), reason="account_inactive")
             raise UnauthorizedError("This account has been deactivated.")
 
+        logger.info("login_succeeded", user_id=str(user.id))
         return user
 
     async def issue_session(
@@ -153,6 +161,7 @@ class AuthService(BaseService):
         session_record = await self.sessions.get_by_raw_token(raw_refresh_token)
         if session_record is not None and session_record.is_active:
             await self.sessions.revoke(session_record)
+            logger.info("user_logged_out", user_id=str(session_record.user_id))
 
     async def verify_email(self, token: str) -> User:
         try:
@@ -170,6 +179,7 @@ class AuthService(BaseService):
             raise ValidationError("This verification link is no longer valid.")
 
         user.email_verified = True
+        logger.info("email_verified", user_id=str(user.id))
         return user
 
     async def resend_verification(self, email: str) -> None:
@@ -217,6 +227,7 @@ class AuthService(BaseService):
 
         user.hashed_password = hash_password(new_password)
         await self.sessions.revoke_all_for_user(user.id)
+        logger.info("password_reset_completed", user_id=str(user.id))
         return user
 
     async def change_password(
@@ -225,10 +236,12 @@ class AuthService(BaseService):
         if user.hashed_password is None or not verify_password(
             current_password, user.hashed_password
         ):
+            logger.warning("change_password_failed", user_id=str(user.id))
             raise UnauthorizedError("Current password is incorrect.")
 
         user.hashed_password = hash_password(new_password)
         await self.sessions.revoke_all_for_user(user.id)
+        logger.info("password_changed", user_id=str(user.id))
 
     async def get_or_create_oauth_user(
         self,
@@ -245,6 +258,9 @@ class AuthService(BaseService):
         email needed."""
         existing_link_user = await self.users.get_by_oauth_account(provider, provider_account_id)
         if existing_link_user is not None:
+            logger.info(
+                "oauth_login_succeeded", user_id=str(existing_link_user.id), provider=provider
+            )
             return existing_link_user
 
         user = await self.users.get_by_email(email)
@@ -258,11 +274,15 @@ class AuthService(BaseService):
             )
             user = await self.users.create(user)
             await self.users.create_preferences(user.id)
+            logger.info(
+                "user_registered", user_id=str(user.id), email=user.email, provider=provider
+            )
         else:
             user.email_verified = True
 
         existing_provider = await self.users.get_auth_provider(user.id, provider)
         if existing_provider is None:
             await self.users.add_auth_provider(user.id, provider, provider_account_id)
+            logger.info("oauth_provider_linked", user_id=str(user.id), provider=provider)
 
         return user
