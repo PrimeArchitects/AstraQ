@@ -46,7 +46,12 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
 
     async with AsyncSessionLocal() as session:
         await session.execute(
-            text("TRUNCATE users, sessions, user_preferences, auth_providers CASCADE")
+            text(
+                "TRUNCATE users, sessions, user_preferences, auth_providers, "
+                "folders, tags, paper_tags, research_papers, paper_metadata, "
+                "uploaded_files, chat_sessions, chat_messages, notifications, "
+                "activity_logs, ai_jobs, team_workspaces, team_members CASCADE"
+            )
         )
         await session.commit()
     redis = await get_redis()
@@ -55,3 +60,21 @@ async def client() -> AsyncGenerator[AsyncClient, None]:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+
+
+async def register_user(
+    client: AsyncClient, email: str = "researcher@example.com", display_name: str = "Dr. Test"
+) -> None:
+    """Shared across feature test modules: registers a user and leaves
+    the client's cookie jar authenticated for subsequent requests."""
+    response = await client.post(
+        "/api/v1/auth/register",
+        json={"email": email, "password": "SecurePass123", "display_name": display_name},
+    )
+    assert response.status_code == 201, response.text
+
+
+def new_client() -> AsyncClient:
+    """A second, independently-cookied client against the same app —
+    for ownership-isolation tests (two distinct users)."""
+    return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
