@@ -3,10 +3,13 @@
 An AI-powered research operating system for quantum computing labs,
 universities, startups, and enterprise R&D teams.
 
-> **Status: Foundation + Dashboard UI + Authentication.** Repository
-> scaffolding, the console UI, and a complete self-hosted authentication
-> system are implemented. See [docs/architecture.md](docs/architecture.md)
-> for what's here and what's intentionally not (AI features, research
+> **Status: Foundation + Dashboard UI + Authentication + Core Backend.**
+> Repository scaffolding, the console UI, a complete self-hosted
+> authentication system, and the core data model (papers, folders, tags,
+> bookmarks, file metadata, chat, notifications, audit trail) are
+> implemented. See [docs/architecture.md](docs/architecture.md) and
+> [docs/database-schema.md](docs/database-schema.md) for what's here and
+> what's intentionally not yet (AI processing, PDF uploads, research
 > business logic).
 
 ## Stack
